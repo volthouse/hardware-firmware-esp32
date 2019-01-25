@@ -1,5 +1,5 @@
 #include "clock.h"
-
+#include "rom/rtc.h"
 
 #define TZ       -1       // (utc+) TZ in hours
 #define DST_MN   60 // use 60mn for summer time in some countries
@@ -9,37 +9,14 @@
 #define TZ_SEC   ((TZ)*3600)
 #define DST_SEC  ((DST_MN)*60)
 
-#define MAGIC_NO 0xABCDEFAB
+// Pulse counter value, stored in RTC_SLOW_MEM
+static size_t RTC_DATA_ATTR m_pulse_count;
 
 
 ClockClass::ClockClass(uint32_t sleepTimeMs) 
   : sleepTimeMs(sleepTimeMs)
 {
-/*  
-  ESP.rtcUserMemoryRead(0, (uint32_t*) &rtc_time_desc, sizeof(rtc_time_desc));
-  
-	if(rtc_time_desc.magic != MAGIC_NO) {       
-    memset(&rtc_time_desc, 0, sizeof(rtc_time_desc));
-    rtc_time_desc.magic = MAGIC_NO;
-    Serial.println("First Boot");
-  } else {    
-    timeval tv;
-    timeval tv_add;
-    memset(&tv_add, 0, sizeof(tv_add));
-    tv_add.tv_sec = sleepTimeMs;
-    add(rtc_time_desc.tv, tv_add, tv);
-    timezone tz = { TZ_MN + DST_MN, 0 };
-    settimeofday(&tv, &tz);
-  }
-*/
-
-    timeval tv;
-    timeval tv_add;
-    memset(&tv_add, 0, sizeof(tv_add));
-    tv_add.tv_sec = sleepTimeMs;
-    add(rtc_time_desc.tv, tv_add, tv);
-    timezone tz = { TZ_MN + DST_MN, 0 };
-    settimeofday(&tv, &tz);
+    m_pulse_count++;
 }
 
 uint32_t ClockClass::hasSecondsChanged()
@@ -71,30 +48,9 @@ void ClockClass::setClock(uint32_t year, uint32_t month, uint32_t day, uint32_t 
     settimeofday(&now, &tz);
 }
 
-void ClockClass::add(const timeval& a, const timeval& b, timeval& result)
-{
-  result.tv_sec = a.tv_sec + b.tv_sec;
-  result.tv_usec = a.tv_usec + b.tv_usec;
-
-  if (result.tv_usec >= 1000000) {
-    result.tv_sec++;
-    result.tv_usec -= 1000000;
-  }
-}
-
-void ClockClass::save()
-{
-  timeval tv;
-  
-  gettimeofday(&tv, nullptr);
-  rtc_time_desc.count++;
-  memcpy(&rtc_time_desc.tv, &tv, sizeof(tv));
-  //ESP.rtcUserMemoryWrite(0, (uint32_t*) &rtc_time_desc, sizeof(rtc_time_desc));  
-}
-
 uint32_t ClockClass::getRebootCount()
 {
-  return  rtc_time_desc.count;
+  return  m_pulse_count;
 }
 
 String ClockClass::toString()

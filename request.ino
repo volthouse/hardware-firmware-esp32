@@ -4,6 +4,8 @@
 #include <WebServer.h>
 #include <U8x8lib.h>
 #include "clock.h"
+#include "index.h"
+#include "rom/rtc.h"
 
 #define SLEEP_SEC 15
 
@@ -16,15 +18,9 @@ const byte DNS_PORT = 53;
 IPAddress apIP(192, 168, 1, 1);
 DNSServer dnsServer;
 
-#include "index.h"
-
-#define LED 2
-#define SLEEP_SEC 15
-
 static uint32_t count = 0;
 static uint32_t rtc_time = 0;
 
-//WiFiServer server(80);
 WebServer server(80);
 
 void handleRoot()
@@ -57,36 +53,19 @@ void handleSetDate()
   u8x8.drawString(0, 20, "Set Date");
 }
 
-void handleLED()
-{
-  /*
- String ledState = "OFF";
- String t_state = server.arg("LEDstate");
- Serial.println(t_state);
- if(t_state == "1")
- {
-  //digitalWrite(LED,LOW);
-  ledState = "ON";
- }
- else
- {
-  //digitalWrite(LED,HIGH);
-  ledState = "OFF";
- }
- 
- server.send(200, "text/plane", ledState);
- */
-}
-
-
-
 //==============================================================
 //                  SETUP
 //==============================================================
 void setup(void)
 {
   Serial.begin(115200);
-  //rtc_time = system_get_rtc_time();
+
+  if (rtc_get_reset_reason(0) == DEEPSLEEP_RESET) {
+    printf("Wake up from deep sleep\n");
+    printf("Pulse count=%d\n", rtc.getRebootCount());
+  } else {
+    printf("Not a deep sleep wake up\n");  
+  }
   
   Serial.println("");
 
@@ -113,12 +92,9 @@ void setup(void)
   Serial.println("");
   Serial.print("Connected to ");
   Serial.print("IP address: ");
-  Serial.println(WiFi.localIP());
-
-  
+  Serial.println(WiFi.localIP());  
  
-  server.on("/", handleRoot);
-  //server.on("/setLED", handleLED);
+  server.on("/", handleRoot);  
   server.on("/setDate", handleSetDate);
   server.on("/getDate", handleGetDate);
 
