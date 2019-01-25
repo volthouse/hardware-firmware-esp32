@@ -9,10 +9,12 @@
 #define TZ_SEC   ((TZ)*3600)
 #define DST_SEC  ((DST_MN)*60)
 
+char timeStringBuff[50];      
+
 ClockClass::ClockClass(uint32_t sleepTimeMs) 
   : sleepTimeMs(sleepTimeMs)
 {
-
+  
 }
 
 uint32_t ClockClass::hasSecondsChanged()
@@ -50,4 +52,14 @@ String ClockClass::toString()
   char b[100];
   ctime_r(&now, b);
   return String(b);
+}
+
+char * ClockClass::timeToCStr()
+{
+  memset(timeStringBuff, 0, sizeof(timeStringBuff));
+  struct tm timeinfo;
+  if(getLocalTime(&timeinfo, 10)){
+    strftime(timeStringBuff, sizeof(timeStringBuff), "%H:%M", &timeinfo);
+  }
+  return timeStringBuff;
 }
