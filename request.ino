@@ -8,6 +8,7 @@
 #include "rom/rtc.h"
 
 #define SLEEP_SEC 15
+#define BUTTON1_PIN 37
 
 // the OLED used
 U8X8_SSD1306_128X64_NONAME_SW_I2C u8x8(/* clock=*/ 15, /* data=*/ 4, /* reset=*/ 16);
@@ -18,8 +19,9 @@ const byte DNS_PORT = 53;
 IPAddress apIP(192, 168, 1, 1);
 DNSServer dnsServer;
 
-static uint32_t count = 0;
-static uint32_t rtc_time = 0;
+static uint32_t state = 0;
+// Pulse counter value, stored in RTC_SLOW_MEM
+static size_t RTC_DATA_ATTR m_pulse_count = 0;
 
 WebServer server(80);
 
@@ -31,10 +33,8 @@ void handleRoot()
 
 void handleGetDate()
 { 
-  String s = rtc.toString() + " Count: " 
-    + String(count) + " Reboot Count:" 
-    + rtc.getRebootCount() +
-    + " RTC Time: " + String(rtc_time);
+  String s = rtc.toString() + " Reboot Count:" 
+    + m_pulse_count;
   server.send(200, "text/plane", s);
 }
 
@@ -59,15 +59,21 @@ void handleSetDate()
 void setup(void)
 {
   Serial.begin(115200);
-
-  if (rtc_get_reset_reason(0) == DEEPSLEEP_RESET) {
-    printf("Wake up from deep sleep\n");
-    printf("Pulse count=%d\n", rtc.getRebootCount());
-  } else {
-    printf("Not a deep sleep wake up\n");  
-  }
-  
   Serial.println("");
+
+  m_pulse_count++;
+  
+  if (rtc_get_reset_reason(0) == DEEPSLEEP_RESET) {
+    Serial.println("Wake up from deep sleep");
+    Serial.println("Pulse count=" + m_pulse_count);
+  } else {
+    Serial.println("Not a deep sleep wake up");  
+  }
+
+  pinMode(BUTTON1_PIN, INPUT);
+  
+  // external wakup source
+  esp_sleep_enable_ext0_wakeup(GPIO_NUM_37, 1); //1 = High, 0 = Low
 
   u8x8.begin();
   u8x8.setFont(u8x8_font_chroma48medium8_r);

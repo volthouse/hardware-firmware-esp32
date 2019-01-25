@@ -15,7 +15,6 @@ public:
   uint32_t hasSecondsChanged();  
 	void setClock(uint32_t year, uint32_t month, uint32_t day, uint32_t hours, uint32_t minutes, uint32_t seconds);
 	String toString();
-  uint32_t getRebootCount();  
 };
 
 #endif _CLOCK_H_

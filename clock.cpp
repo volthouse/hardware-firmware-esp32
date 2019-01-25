@@ -9,14 +9,10 @@
 #define TZ_SEC   ((TZ)*3600)
 #define DST_SEC  ((DST_MN)*60)
 
-// Pulse counter value, stored in RTC_SLOW_MEM
-static size_t RTC_DATA_ATTR m_pulse_count;
-
-
 ClockClass::ClockClass(uint32_t sleepTimeMs) 
   : sleepTimeMs(sleepTimeMs)
 {
-    m_pulse_count++;
+
 }
 
 uint32_t ClockClass::hasSecondsChanged()
@@ -46,11 +42,6 @@ void ClockClass::setClock(uint32_t year, uint32_t month, uint32_t day, uint32_t 
     struct timeval now = { .tv_sec = t };
     timezone tz = { TZ_MN + DST_MN, 0 };
     settimeofday(&now, &tz);
-}
-
-uint32_t ClockClass::getRebootCount()
-{
-  return  m_pulse_count;
 }
 
 String ClockClass::toString()
