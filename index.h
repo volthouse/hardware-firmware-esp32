@@ -4,9 +4,8 @@ const char MAIN_page[] PROGMEM = R"=====(
 <body>
 
 <div id="demo">
-<h1>The ESP8266 Clock Test</h1>
-	<button type="button" onclick="sendData(1)">LED ON</button>
-	<button type="button" onclick="sendData(0)">LED OFF</button>
+<h1>The ESP Clock Test</h1>
+	<button type="button" onclick="sendData(100)">Start Alarm Mode</button>
   <button type="button" onclick="setDate()">Set DateTime</button><BR>
 </div>
 
@@ -16,7 +15,7 @@ const char MAIN_page[] PROGMEM = R"=====(
   LED State is : <span id="LEDState">NA</span>
 </div>
 <script>
-function sendData(led) {
+function sendData(data) {
   var xhttp = new XMLHttpRequest();
   xhttp.onreadystatechange = function() {
     if (this.readyState == 4 && this.status == 200) {
@@ -24,7 +23,7 @@ function sendData(led) {
       this.responseText;
     }
   };
-  xhttp.open("GET", "setLED?LEDstate="+led, true);
+  xhttp.open("GET", "setData?data=" + data, true);
   xhttp.send();
 }
 

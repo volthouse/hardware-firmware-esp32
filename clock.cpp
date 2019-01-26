@@ -9,7 +9,7 @@
 #define TZ_SEC   ((TZ)*3600)
 #define DST_SEC  ((DST_MN)*60)
 
-char timeStringBuff[50];      
+char buffer[50];      
 
 ClockClass::ClockClass(uint32_t sleepTimeMs) 
   : sleepTimeMs(sleepTimeMs)
@@ -17,7 +17,7 @@ ClockClass::ClockClass(uint32_t sleepTimeMs)
   
 }
 
-uint32_t ClockClass::hasSecondsChanged()
+uint32_t ClockClass::tick()
 {
   static uint32_t lastSec = 0;
   timeval tv;  
@@ -32,7 +32,13 @@ uint32_t ClockClass::hasSecondsChanged()
   return false;
 }
 
-void ClockClass::setClock(uint32_t year, uint32_t month, uint32_t day, uint32_t hours, uint32_t minutes, uint32_t seconds) {
+uint32_t ClockClass::tickMs()
+{
+  return esp_timer_get_time() / 1000;
+}
+
+void ClockClass::setClock(uint32_t year, uint32_t month, uint32_t day, uint32_t hours, uint32_t minutes, uint32_t seconds)
+{
 	  struct tm tm;
     tm.tm_year = year - 1900;
     tm.tm_mon = month - 1;
@@ -56,10 +62,9 @@ String ClockClass::toString()
 
 char * ClockClass::timeToCStr()
 {
-  memset(timeStringBuff, 0, sizeof(timeStringBuff));
-  struct tm timeinfo;
-  if(getLocalTime(&timeinfo, 10)){
-    strftime(timeStringBuff, sizeof(timeStringBuff), "%H:%M", &timeinfo);
-  }
-  return timeStringBuff;
+  time_t ltime;
+  time(&ltime);      
+  tm * ptm = localtime(&ltime);
+  strftime(buffer, 32, "%H:%M:%S", ptm);   
+  return buffer;
 }
