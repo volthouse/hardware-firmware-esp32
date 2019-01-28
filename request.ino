@@ -1,3 +1,9 @@
+/*
+	TODO:	Optimize current consuption
+			see https://docs.espressif.com/projects/esp-idf/en/latest/api-reference/system/sleep_modes.html#
+
+ +/
+
 #include <WiFi.h>
 #include <DNSServer.h>
 #include <WiFiClient.h>
@@ -145,6 +151,8 @@ void do_buttons(void)
     case 0:
       if(b1 && !timeout) {
         timeout = rtc.tickMs();
+      } else if(!b1){
+        timeout = 0;
       } else if(b1 && (rtc.tickMs() - timeout) > 2000) {
         state = 1;    
       }
