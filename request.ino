@@ -2,7 +2,7 @@
 	TODO:	Optimize current consuption
 			see https://docs.espressif.com/projects/esp-idf/en/latest/api-reference/system/sleep_modes.html#
 
- +/
+ */
 
 #include <WiFi.h>
 #include <DNSServer.h>
@@ -10,15 +10,20 @@
 #include <WebServer.h>
 #include <U8x8lib.h>
 #include "rom/rtc.h"  
+#include <esp_wifi.h>
+#include <esp_bt.h>
+#include <esp_bt_main.h>
 
 #include "clock.h"
 #include "index.h"
 
-#define SLEEP_SEC 15
-#define BUTTON1_PIN 38
-#define BUTTON2_PIN 37
-#define uS_TO_S_FACTOR 1000000      /* Conversion factor for micro seconds to seconds */
-#define TIME_TO_SLEEP  120          /* Time ESP32 will go to sleep (in seconds) */
+#define SLEEP_SEC       15
+#define uS_TO_S_FACTOR  1000000  /* Conversion factor for micro seconds to seconds */
+#define TIME_TO_SLEEP   120        /* Time ESP32 will go to sleep (in seconds) */
+
+#define BUZZER_PIN      26
+#define BUTTON1_PIN     38
+#define BUTTON2_PIN     37
 
 #define STATE_DEFAULT       0
 #define STATE_WIFI_INIT     1
@@ -182,13 +187,26 @@ void do_deepsleep(void)
       break;
   }
 
-  if(sleep) {
-    // external wakup source
+  if(sleep) {    
+    server.stop();
+    WiFi.mode(WIFI_OFF);
+
+    /*
+    esp_bluedroid_disable();
+    esp_bt_controller_disable();
+    esp_wifi_disconnect();
+    esp_wifi_stop();
+    */
+    
+    // external wakup source    
     esp_sleep_enable_ext0_wakeup(GPIO_NUM_38, 0); //1 = High, 0 = Low
     esp_sleep_enable_timer_wakeup(TIME_TO_SLEEP * uS_TO_S_FACTOR);
     Serial.println("Setup ESP32 to sleep for every " + String(TIME_TO_SLEEP) + " Seconds");
     Serial.println("Going to sleep now");
     u8x8.setPowerSave(1);
+
+    delay(1000);
+    
     esp_deep_sleep_start();
   }
 }
