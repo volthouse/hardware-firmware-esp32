@@ -17,9 +17,13 @@
 #define SLEEP_SEC 15
 #define BUTTON1_PIN 38
 #define BUTTON2_PIN 37
-#define uS_TO_S_FACTOR 1000000  /* Conversion factor for micro seconds to seconds */
-#define TIME_TO_SLEEP  60        /* Time ESP32 will go to sleep (in seconds) */
+#define uS_TO_S_FACTOR 1000000      /* Conversion factor for micro seconds to seconds */
+#define TIME_TO_SLEEP  120          /* Time ESP32 will go to sleep (in seconds) */
 
+#define STATE_DEFAULT       0
+#define STATE_WIFI_INIT     1
+#define STATE_WIFI_ACTIVE   2
+#define STATE_DEEPSLEEP     100
 
 // the OLED used
 U8X8_SSD1306_128X64_NONAME_SW_I2C u8x8(/* clock=*/ 15, /* data=*/ 4, /* reset=*/ 16);
@@ -74,7 +78,7 @@ void setup(void)
   Serial.begin(115200);
   Serial.println("");
 
-  //m_pulse_count++;
+  state = STATE_DEFAULT;
   
   if (rtc_get_reset_reason(0) == DEEPSLEEP_RESET) {
     Serial.println("Wake up from deep sleep");
@@ -109,7 +113,7 @@ void setup(void)
 void do_wifi(void)
 {
   switch(state) {
-    case 1:
+    case STATE_WIFI_INIT:
       //WiFi.softAPConfig(apIP, apIP, IPAddress(255, 255, 255, 0));
       WiFi.mode(WIFI_AP);
       WiFi.softAP("ESP-LED");  
@@ -130,10 +134,10 @@ void do_wifi(void)
       Serial.println(WiFi.localIP());  
       Serial.println("HTTP server started");
       
-      state = 2;
+      state = STATE_WIFI_ACTIVE;
       break;
       
-    case 2:
+    case STATE_WIFI_ACTIVE:
       //dnsServer.processNextRequest();
       server.handleClient();
       break;
@@ -148,13 +152,13 @@ void do_buttons(void)
   uint8_t b2 = digitalRead(BUTTON2_PIN) == 0 ? 1 : 0;
   
   switch(state) {
-    case 0:
+    case STATE_DEFAULT:
       if(b1 && !timeout) {
         timeout = rtc.tickMs();
       } else if(!b1){
         timeout = 0;
       } else if(b1 && (rtc.tickMs() - timeout) > 2000) {
-        state = 1;    
+        state = STATE_WIFI_INIT;    
       }
       break;
   }
@@ -166,14 +170,14 @@ void do_deepsleep(void)
   uint32_t sleep = 0;
   
   switch(state) {    
-    case 0:
+    case STATE_DEFAULT:
       if((rtc.tickMs() - timeout) >= 1000) {
         deepsleep_timeout++;        
         timeout = rtc.tickMs();
       }
       sleep = deepsleep_timeout > 10;      
       break;
-    case 100:
+    case STATE_DEEPSLEEP:
       sleep = true;
       break;
   }
@@ -192,18 +196,18 @@ void do_deepsleep(void)
 void do_display(void)
 {
   switch(state) {
-    case 0:
+    case STATE_DEFAULT:
       u8x8.drawString(0, 0, "Alarm Clock");
       break; 
-    case 1:
+    case STATE_WIFI_INIT:
       u8x8.drawString(0, 0, "Wifi Mode  ");
       break;
   }
 
   switch(state) {
-    case 0:   
-    case 1:
-    case 2: {      
+    case STATE_DEFAULT:   
+    case STATE_WIFI_INIT:
+    case STATE_WIFI_ACTIVE: {      
       if(rtc.tick()) {
         u8x8.drawString(0, 2, rtc.timeToCStr());
         char buf[20];
