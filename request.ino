@@ -22,8 +22,8 @@
 #define TIME_TO_SLEEP   120        /* Time ESP32 will go to sleep (in seconds) */
 
 #define BUZZER_PIN      26
-#define BUTTON1_PIN     38
-#define BUTTON2_PIN     37
+#define BUTTON1_PIN     27
+#define BUTTON2_PIN     22
 
 #define STATE_DEFAULT       0
 #define STATE_WIFI_INIT     1
@@ -155,6 +155,11 @@ void do_buttons(void)
   
   uint8_t b1 = digitalRead(BUTTON1_PIN) == 0 ? 1 : 0;
   uint8_t b2 = digitalRead(BUTTON2_PIN) == 0 ? 1 : 0;
+
+  char buf[50];
+  sprintf(buf, "B1: %d   B2: %d", b1, b2);
+
+  Serial.println(buf);
   
   switch(state) {
     case STATE_DEFAULT:
@@ -191,15 +196,23 @@ void do_deepsleep(void)
     server.stop();
     WiFi.mode(WIFI_OFF);
 
-    /*
+    
     esp_bluedroid_disable();
     esp_bt_controller_disable();
     esp_wifi_disconnect();
     esp_wifi_stop();
-    */
     
-    // external wakup source    
-    esp_sleep_enable_ext0_wakeup(GPIO_NUM_38, 0); //1 = High, 0 = Low
+    /*
+    NOTE:
+    ======
+    Only RTC IO can be used as a source for external wake
+    source. They are pins: 0,2,4,12-15,25-27,32-39.
+    */
+    Serial.println("DeepSleep Res");
+    // external wakup source
+    int r = esp_sleep_enable_ext0_wakeup(GPIO_NUM_27, 0); //1 = High, 0 = Low    
+    Serial.println(r);
+    
     esp_sleep_enable_timer_wakeup(TIME_TO_SLEEP * uS_TO_S_FACTOR);
     Serial.println("Setup ESP32 to sleep for every " + String(TIME_TO_SLEEP) + " Seconds");
     Serial.println("Going to sleep now");
