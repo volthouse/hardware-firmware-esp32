@@ -13,6 +13,7 @@
 #include <esp_wifi.h>
 #include <esp_bt.h>
 #include <esp_bt_main.h>
+#include <esp_spi_flash.h>
 
 #include "clock.h"
 #include "index.h"
@@ -83,6 +84,12 @@ void setup(void)
   Serial.begin(115200);
   Serial.println("");
 
+/*
+  spi_flash_init();
+  uint32_t fsize = spi_flash_get_chip_size();
+  Serial.println(fsize);
+*/
+
   state = STATE_DEFAULT;
   
   if (rtc_get_reset_reason(0) == DEEPSLEEP_RESET) {
@@ -119,12 +126,21 @@ void do_wifi(void)
 {
   switch(state) {
     case STATE_WIFI_INIT:
+#if 0    
       //WiFi.softAPConfig(apIP, apIP, IPAddress(255, 255, 255, 0));
       WiFi.mode(WIFI_AP);
       WiFi.softAP("ESP-LED");  
       WiFi.begin();
-
       Serial.println("Connecting ...");
+#endif
+      
+
+      WiFi.begin("ssid", "*****");
+      while (WiFi.status() != WL_CONNECTED) {
+          delay(500);
+          Serial.print(".");
+      }      
+
       
       server.on("/", handleRoot);  
       server.on("/setDate", handleSetDate);
@@ -156,10 +172,9 @@ void do_buttons(void)
   uint8_t b1 = digitalRead(BUTTON1_PIN) == 0 ? 1 : 0;
   uint8_t b2 = digitalRead(BUTTON2_PIN) == 0 ? 1 : 0;
 
-  char buf[50];
-  sprintf(buf, "B1: %d   B2: %d", b1, b2);
-
-  Serial.println(buf);
+  //char buf[50];
+  //sprintf(buf, "B1: %d   B2: %d", b1, b2);
+  //Serial.println(buf);
   
   switch(state) {
     case STATE_DEFAULT:
