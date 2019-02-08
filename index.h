@@ -1,19 +1,56 @@
 const char MAIN_page[] PROGMEM = R"=====(
 <!DOCTYPE html>
 <html>
+<style>
+[type="date"] {
+  background:#fff url('calendar_2.png')  97% 50% no-repeat ;
+}
+[type="date"]::-webkit-inner-spin-button {
+  display: none;
+}
+[type="date"]::-webkit-calendar-picker-indicator {
+  opacity: 0;
+}
+/*
+[type="time"] {
+  background:#fff url('calendar_2.png')  97% 50% no-repeat ;
+}
+[type="time"]::-webkit-inner-spin-button {
+  display: none;
+}
+[type="time"]::-webkit-time-picker-indicator {
+  opacity: 0;
+}
+*/
+/* custom styles */
+body {
+  padding: 4em;
+  background: #e5e5e5;
+  font: 13px/1.4 Geneva, 'Lucida Sans', 'Lucida Grande', 'Lucida Sans Unicode', Verdana, sans-serif;
+}
+label {
+  display: block;
+}
+input {
+  border: 1px solid #c4c4c4;
+  border-radius: 5px;
+  background-color: #fff;
+  padding: 3px 5px;
+  box-shadow: inset 0 3px 6px rgba(0,0,0,0.1);
+  width: 190px;
+}
+</style>
 <body>
 
-<div id="demo">
-<h1>The ESP Clock Test</h1>
-	<button type="button" onclick="sendData(100)">Start Alarm Mode</button>
-  <button type="button" onclick="setDate()">Set DateTime</button><BR>
-</div>
-
-<div>
-	SYS Date is : <span id="SYSDate">NA</span><br>
-  ESP Date is : <span id="ESPDate">NA</span><br>
-  LED State is : <span id="LEDState">NA</span>
-</div>
+<h1>Alarm Clock</h1>
+<label for="nowdate">Date</label><BR>
+<input type="date" name="nowdate" id="nowdate"><BR>
+<label for="nowtime">Time</label><BR>
+<input type="time" name="nowtime" id="nowtime"><BR>
+<label for="alarmtime">Alarm</label><BR>
+<input type="time" name="alarmtime" id="alarmtime"><BR>
+<button type="button" onclick="sendData(100)">Start Alarm Mode</button><BR>
+<button type="button" onclick="setDate()">Set DateTime</button><BR>
 <script>
 function sendData(data) {
   var xhttp = new XMLHttpRequest();

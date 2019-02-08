@@ -85,11 +85,13 @@ void setup(void)
   Serial.println("");
 
 /*
-  spi_flash_init();
-  uint32_t fsize = spi_flash_get_chip_size();
-  Serial.println(fsize);
+  for(int i = 0; i < 10; i++) {
+    spi_flash_init();
+    uint32_t fsize = spi_flash_get_chip_size();
+    Serial.println(fsize);
+    delay(1000);
+  }
 */
-
   state = STATE_DEFAULT;
   
   if (rtc_get_reset_reason(0) == DEEPSLEEP_RESET) {
@@ -126,7 +128,7 @@ void do_wifi(void)
 {
   switch(state) {
     case STATE_WIFI_INIT:
-#if 0    
+#if 1    
       //WiFi.softAPConfig(apIP, apIP, IPAddress(255, 255, 255, 0));
       WiFi.mode(WIFI_AP);
       WiFi.softAP("ESP-LED");  
@@ -134,13 +136,13 @@ void do_wifi(void)
       Serial.println("Connecting ...");
 #endif
       
-
+#if 0
       WiFi.begin("ssid", "*****");
       while (WiFi.status() != WL_CONNECTED) {
           delay(500);
           Serial.print(".");
       }      
-
+#endif
       
       server.on("/", handleRoot);  
       server.on("/setDate", handleSetDate);
