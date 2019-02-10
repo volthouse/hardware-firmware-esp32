@@ -25,8 +25,8 @@ const char MAIN_page[] PROGMEM = R"=====(
 /* custom styles */
 body {
   padding: 4em;
-  background: #e5e5e5;
-  font: 13px/1.4 Geneva, 'Lucida Sans', 'Lucida Grande', 'Lucida Sans Unicode', Verdana, sans-serif;
+  background: #e5e5e5;  
+  font-family:verdana;
 }
 label {
   display: block;
@@ -39,18 +39,140 @@ input {
   box-shadow: inset 0 3px 6px rgba(0,0,0,0.1);
   width: 190px;
 }
+table, th, td {
+  border: none;  
+}
+th, td {
+  padding: 5px;
+}
+th {
+  text-align: left;
+}
+
+button{
+    border:0;
+    border-radius:0.3rem;
+    background-color:#1fa3ec;
+    color:#fff;
+    line-height:2.4rem;
+    font-size:1.2rem;
+    width:100%; 
+}.q{float: right;width: 64px;text-align: right;}
+
+.flipswitch {
+  position: relative;
+  width: 100%;
+  -webkit-user-select:none;
+  -moz-user-select:none;
+  -ms-user-select: none;
+}
+.flipswitch input[type=checkbox] {
+  display: none;
+}
+.flipswitch-label {
+  display: block;
+  overflow: hidden;
+  cursor: pointer;
+  border: 1px solid #999999;
+  border-radius: 6px;
+}
+.flipswitch-inner {
+  width: 200%;
+  margin-left: -100%;
+  -webkit-transition: margin 0.3s ease-in 0s;
+  -moz-transition: margin 0.3s ease-in 0s;
+  -ms-transition: margin 0.3s ease-in 0s;
+  -o-transition: margin 0.3s ease-in 0s;
+  transition: margin 0.3s ease-in 0s;
+}
+.flipswitch-inner:before, .flipswitch-inner:after {
+  float: left;
+  width: 50%;
+  height: 40px;
+  padding: 0;
+  line-height: 40px;
+  font-size: 18px;
+  color: white;
+  font-family: Trebuchet, Arial, sans-serif;
+  font-weight: bold;
+  -moz-box-sizing: border-box;
+  -webkit-box-sizing: border-box;
+  box-sizing: border-box;
+}
+.flipswitch-inner:before {
+  content: "Auto";
+  padding-left: 12px;
+  background-color: #1fa3ec;
+  color: #FFFFFF;
+}
+.flipswitch-inner:after {
+  content: "Manual";
+  padding-right: 12px;
+  background-color: #EBEBEB;
+  color: #888888;
+  text-align: right;
+}
+.flipswitch-switch {
+  width: 31px;
+  margin: 6.5px;
+  background: #FFFFFF;
+  border: 1px solid #999999;
+  border-radius: 6px;
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  right: 76%;
+  -webkit-transition: all 0.3s ease-in 0s;
+  -moz-transition: all 0.3s ease-in 0s;
+  -ms-transition: all 0.3s ease-in 0s;
+  -o-transition: all 0.3s ease-in 0s;
+  transition: all 0.3s ease-in 0s;
+}
+.flipswitch-cb:checked + .flipswitch-label .flipswitch-inner {
+  margin-left: 0;
+}
+.flipswitch-cb:checked + .flipswitch-label .flipswitch-switch {
+  right: 0;
+}
 </style>
 <body>
 
 <h1>Alarm Clock</h1>
-<label for="nowdate">Date</label><BR>
-<input type="date" name="nowdate" id="nowdate"><BR>
-<label for="nowtime">Time</label><BR>
-<input type="time" name="nowtime" id="nowtime"><BR>
-<label for="alarmtime">Alarm</label><BR>
-<input type="time" name="alarmtime" id="alarmtime"><BR>
-<button type="button" onclick="sendData(100)">Start Alarm Mode</button><BR>
-<button type="button" onclick="setDate()">Set DateTime</button><BR>
+<table>
+  <tr>
+    <th>Date</th>
+  </tr>
+  <tr>
+    <td><input type="date" name="nowdate" id="nowdate"></td>
+    <td><label name="nowdatelbl" id="nowdatelbl"></td>
+  </tr>
+  <tr>
+    <th>Time</th>    
+  </tr>
+  <tr>
+    <td><input type="time" name="nowtime" id="nowtime"></td>
+  </tr>
+  <tr>
+    <td>
+        <div class="flipswitch">
+            <input type="checkbox" name="flipswitch" class="flipswitch-cb" id="dateFlipswitch" checked>
+            <label class="flipswitch-label" for="dateFlipswitch">
+                <div class="flipswitch-inner"></div>
+                <div class="flipswitch-switch"></div>
+            </label>
+        </div>    
+    </td>
+  </tr>
+  <tr>
+    <th>Alarm</th>    
+  </tr>
+  <tr>
+    <td><input type="time" name="alarmtime" id="alarmtime"></td>
+  </tr>
+  <tr>
+    <td><button type="submit" onclick="setDate()">Submit</button></td>
+  </tr>
+</table>
 <script>
 function sendData(data) {
   var xhttp = new XMLHttpRequest();
@@ -82,9 +204,17 @@ function setDate() {
 }
 
 setInterval(function() {
-  // Call a function repetatively with 2 Second interval
-  getDate();
-}, 2000); //2000mSeconds update rate
+    // Call a function repetatively
+    // getDate();
+    
+    if(document.getElementById("dateFlipswitch").checked) {
+        var date = new Date();
+        var currentDate = date.toISOString().slice(0,10);
+        var currentTime = date.toTimeString().split(' ')[0];        
+        document.getElementById("nowdate").value = currentDate;
+        document.getElementById("nowtime").value = currentTime;
+    }
+}, 1000); //1000mSeconds update rate
 
 function getDate() {  
   var xhttp = new XMLHttpRequest();
@@ -101,5 +231,4 @@ function getDate() {
 </script>
 </body>
 </html>
-
 )=====";
